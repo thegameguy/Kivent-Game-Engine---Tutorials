@@ -1,0 +1,106 @@
+#:kivy 1.9.0
+#:import path os.path
+#:import dirname os.path.dirname
+#:import main __main__
+
+TestGame:
+
+<TestGame>:
+    gameworld: gameworld
+    app: app
+    GameWorld:
+        id: gameworld
+        gamescreenmanager: gamescreenmanager
+        size_of_gameworld: 100*1024
+		system_count: 9
+        zones: {'general': 10000, 'touch': 100}
+
+        PositionSystem2D:
+            system_id: 'position'
+            gameworld: gameworld
+            zones: ['general', 'touch']
+		ScaleSystem2D:
+            system_id: 'scale'
+            gameworld: gameworld
+            zones: ['general']
+        ColorSystem:
+			id: 'color'
+            gameworld: gameworld
+            zones: ['general']
+        RotateSystem2D:
+            system_id: 'rotate'
+            gameworld: gameworld
+            zones: ['general']
+
+        RotateColorScaleRenderer:
+		    system_id: 'renderer'
+            gameworld: gameworld
+            zones: ['general']
+            shader_source: 'assets/glsl/positioncolorrotateshader.glsl'
+			system_names: ['renderer', 'position', 'rotate', 'color', 'scale']
+			gameview: 'camera1'
+
+        RotateColorScaleRenderer:
+		    system_id: 'renderer2'
+            gameworld: gameworld
+            zones: ['general']
+            shader_source: 'assets/glsl/positioncolorrotateshader.glsl'
+			system_names: ['renderer2', 'position', 'rotate', 'color', 'scale']
+			gameview: 'camera1'
+
+        GameView:
+            system_id: 'camera1'
+            gameworld: gameworld
+            size: root.size
+            window_size: root.size
+            pos: root.pos
+            do_scroll: False
+            updateable: True
+            camera_scale: 1
+			render_system_order: ['renderer2', 'renderer']
+
+        CymunkPhysics:
+            gameworld: root.gameworld
+            zones: ['general']
+        CymunkTouchSystem:
+            gameworld: root.gameworld
+            zones: ['touch']
+            zone_to_use: 'touch'
+            physics_system: 'cymunk_physics'
+            touch_radius: 30
+
+        GravitySystem:
+            system_id: 'gravity'
+            gameworld: gameworld
+            updateable: True
+			zones: ['general']
+            update_time: .1
+
+
+    GameScreenManager:
+        id: gamescreenmanager
+        size: root.size
+        pos: root.pos
+        gameworld: gameworld
+
+<GameScreenManager>:
+    MainScreen:
+        id: main_screen
+
+<MainScreen@GameScreen>:
+    name: 'main'
+    FloatLayout:
+        DebugPanel:
+            size_hint: (.2, .1)
+            pos_hint: {'x': .225, 'y': .025}
+
+<DebugPanel>:
+    Label:
+        pos: root.pos
+        size: root.size
+        font_size: root.size[1]*.5
+        halign: 'center'
+        valign: 'middle'
+        color: (1,1,1,1)
+        text: 'FPS: ' + root.fps if root.fps != None else 'FPS:'
+
